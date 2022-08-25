@@ -13,7 +13,12 @@ class CheckBluetoothConnected extends StatelessWidget {
     var bleProvider = Provider.of<BleProvider>(context);
     var size = MediaQuery.of(context).size;
     if (bleProvider.bleConnected) {
-      return DeviceConnectPage();
+      if (!bleProvider.wavelength) {
+        bleProvider.getWavelength();
+        return LoadingPage('데이터 가져오는중..');
+      } else {
+        return ControllDataPage();
+      }
     } else {
       bleProvider.connecteBle(context, size);
       return LoadingPage('블루투스 연결중이에요.');

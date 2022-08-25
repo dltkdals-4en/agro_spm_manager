@@ -20,8 +20,19 @@ class ControllDataPage extends StatelessWidget {
     var settingProvider = Provider.of<SettingProvider>(context);
     var size = MediaQuery.of(context).size;
     BluetoothDevice device = bleProvider.selectDevice!;
+
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        leading: BackButton(
+          onPressed: () {
+            bleProvider.connection?.dispose();
+            bleProvider.connection = null;
+            bleProvider.bleConnected = false;
+            bleProvider.wavelength = false;
+            Navigator.maybePop(context);
+          },
+        ),
+      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.all(NORMALGAP),
@@ -29,6 +40,30 @@ class ControllDataPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      bleProvider.sendData('\$preOperation()\r\n');
+                      prProvider.inputProtocol('\$preOperation()\r\n');
+                    },
+                    style: ElevatedButton.styleFrom(
+                        fixedSize: Size(size.width / 2 - 30, 60)),
+                    child: Text('전구 켜기'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      bleProvider.sendData('\$endOperation()\r\n');
+                      prProvider.inputProtocol('\$endOperation()\r\n');
+                    },
+                    style: ElevatedButton.styleFrom(
+                        fixedSize: Size(size.width / 2 - 30, 60)),
+                    child: Text('전구 끄기'),
+                  ),
+                ],
+              ),
+              NorH,
               (controllDataPageDebug)
                   ? Column(
                       children: [
@@ -44,45 +79,66 @@ class ControllDataPage extends StatelessWidget {
                         ),
                       ],
                     )
-                  : DropdownButton(
-                      items: bleProvider.waveList.map((e) {
-                        return DropdownMenuItem(
-                          value: e,
-                          child: Text('$e'),
-                        );
-                      }).toList(),
-                      onChanged: (value) {},
+                  : Column(
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              '파장 선택: ',
+                              style: makeTextStyle(18, AppColors.black, 'bold'),
+                            ),
+                            SmW,
+                            DropdownButton(
+                              value: bleProvider.selectedWave,
+                              items: bleProvider.waveList.map((e) {
+                                return DropdownMenuItem(
+                                  value: e,
+                                  child: Text('$e'),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                bleProvider.changeWave(value);
+
+                              },
+                            ),
+                          ],
+                        ),
+                        NorH,
+                        Row(
+                          children: [
+                            Text(
+                              '해당 파장 값: ',
+                              style: makeTextStyle(18, AppColors.black, 'bold'),
+                            ),
+                            Text(
+                              '${bleProvider.getResult()}',
+                              style: makeTextStyle(
+                                  18, AppColors.lightPrimary, 'bold'),
+                            )
+                          ],
+                        ),
+                      ],
                     ),
               NorH,
               ElevatedButton(
                 onPressed: () {
-                  bleProvider.sendData('\$preOperation()\r\n');
-                  prProvider.inputProtocol('\$preOperation()\r\n');
+                  bleProvider.sendData('\$getSpectrumData()\r\n');
+                  prProvider.inputProtocol('\$getSpectrumSensor()\r\n');
                 },
                 style:
                     ElevatedButton.styleFrom(fixedSize: Size(size.width, 60)),
-                child: Text('전구 켜기'),
+                child: Text('센서 측정하기'),
               ),
+              NorH,
               ElevatedButton(
                 onPressed: () {
-                  bleProvider.sendData('\$preOperation()\r\n');
-                  prProvider.inputProtocol('\$preOperation()\r\n');
+                  gsheets.insertData(prProvider.inputText, bleProvider.outputText).then((value) {
+                    makeFToast(context, size, '저장되었습니다.');
+                  });
                 },
-                child: Text('preOperation'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  bleProvider.sendData('\$preOperation()\r\n');
-                  prProvider.inputProtocol('\$preOperation()\r\n');
-                },
-                child: Text('preOperation'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  bleProvider.sendData('\$preOperation()\r\n');
-                  prProvider.inputProtocol('\$preOperation()\r\n');
-                },
-                child: Text('preOperation'),
+                style:
+                    ElevatedButton.styleFrom(fixedSize: Size(size.width, 60)),
+                child: Text('결과값 스프레드시트 저장'),
               ),
             ],
           ),

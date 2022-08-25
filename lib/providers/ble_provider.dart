@@ -20,8 +20,10 @@ class BleProvider with ChangeNotifier {
   List<String> outputList = [];
   String outputText = "출력값이 없습니다.";
   bool wavelength = false;
-  List<int> waveList = [];
+  List<String> waveList = [];
   List<int> test = [];
+  List resultList = [];
+  String result = '';
 
   void scanBle() {
     serial.startDiscovery().listen((event) {
@@ -52,15 +54,20 @@ class BleProvider with ChangeNotifier {
         bleConnected = value.isConnected;
 
         notifyListeners();
+
         connection!.input!.listen((event) {
           test += event;
+          if (test.contains(41)) {
+            _onDataReceived(Uint8List.fromList(test));
+            print('test');
+            test.clear();
+          }
           // _onDataReceived(event);
           // notifyListeners();
-        }).onData((data) {
-          print('11 $data');
         });
       }).catchError((e) {
         makeFToast(context, size, "기기 연결을 확인해주세요");
+        Navigator.pop(context);
       });
     } else {
       bleConnected = false;
@@ -98,6 +105,7 @@ class BleProvider with ChangeNotifier {
       try {
         connection!.output.add(i);
         await connection!.output.allSent;
+        notifyListeners();
       } catch (e) {
         print(e);
         // Ignore error, but notify state
@@ -137,8 +145,9 @@ class BleProvider with ChangeNotifier {
     String dataString = String.fromCharCodes(buffer);
     String dataString2 = String.fromCharCodes(data);
 
-    outputProtocol(dataString);
-
+    settingString(dataString);
+    outputText = dataString;
+    notifyListeners();
     return dataString;
     int index = buffer.indexOf(13);
   }
@@ -205,12 +214,50 @@ class BleProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void getWavelength() {
-    sendData('connectSensor\r\n').then((value) {
-      Future.delayed(Duration(milliseconds: 333), () {
-        wavelength = true;
+  Future<void> getWavelength() async {
+    await sendData('\$connectSensor()\r\n').then((value) => wavelength = true);
+  }
+
+  void settingString(String dataString) {
+    var startString = dataString.substring(0, 4);
+    print(startString);
+    switch (startString) {
+      case '\$102':
+        result = '';
+        result = dataString.substring(5, dataString.length - 3);
         notifyListeners();
-      });
-    });
+        break;
+      case '\$103':
+        var list = dataString.split(',');
+        list.removeAt(0);
+        waveList =
+            list.toString().substring(1, list.toString().length - 4).split(',');
+        selectedWave = waveList[0];
+        notifyListeners();
+        break;
+      default:
+        break;
+    }
+  }
+
+  String selectedWave = '';
+
+  String getResult() {
+    if (result != '') {
+      if (selectedWave != '') {
+        var index = int.parse(selectedWave) / 5 - 67;
+        return result.split(',')[index.toInt()];
+      } else {
+        return result.split(',')[0];
+      }
+    } else {
+      return '';
+    }
+  }
+
+  void changeWave(Object? value) {
+    selectedWave = value.toString();
+    getResult();
+    notifyListeners();
   }
 }

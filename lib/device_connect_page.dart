@@ -38,7 +38,9 @@ class DeviceConnectPage extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () {
-              gsheets.insertData(prProvider.inputText, bleProvider.outputText);
+              gsheets.insertData(prProvider.inputText, bleProvider.outputText).then((value) {
+                makeFToast(context, size, '저장되었습니다.');
+              });
             },
             icon: Icon(Icons.save),
           ),
@@ -90,7 +92,7 @@ class DeviceConnectPage extends StatelessWidget {
                     children: [
                       Text('입력값 : ${prProvider.inputText}'),
                       Text(
-                          '데이터 길이 : ${bleProvider.getOutputData().split(',').length}'),
+                          '데이터 길이 : ${bleProvider.outputText.split(',').length}'),
                       Text('데이터 값 : \n ${bleProvider.outputText}'),
                       // Text(bleProvider.getOutputData()),
                     ],
