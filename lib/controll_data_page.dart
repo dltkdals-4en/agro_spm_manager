@@ -29,6 +29,7 @@ class ControllDataPage extends StatelessWidget {
             bleProvider.connection = null;
             bleProvider.bleConnected = false;
             bleProvider.wavelength = false;
+            bleProvider.selectedResult = '';
             Navigator.maybePop(context);
           },
         ),
@@ -50,7 +51,7 @@ class ControllDataPage extends StatelessWidget {
                     },
                     style: ElevatedButton.styleFrom(
                         fixedSize: Size(size.width / 2 - 30, 60)),
-                    child: Text('전구 켜기'),
+                    child: Text('램프 ON'),
                   ),
                   ElevatedButton(
                     onPressed: () {
@@ -59,7 +60,7 @@ class ControllDataPage extends StatelessWidget {
                     },
                     style: ElevatedButton.styleFrom(
                         fixedSize: Size(size.width / 2 - 30, 60)),
-                    child: Text('전구 끄기'),
+                    child: Text('램프 OFF'),
                   ),
                 ],
               ),
@@ -111,7 +112,7 @@ class ControllDataPage extends StatelessWidget {
                               style: makeTextStyle(18, AppColors.black, 'bold'),
                             ),
                             Text(
-                              '${bleProvider.getResult()}',
+                              '${bleProvider.selectedResult}',
                               style: makeTextStyle(
                                   18, AppColors.lightPrimary, 'bold'),
                             )
@@ -132,7 +133,7 @@ class ControllDataPage extends StatelessWidget {
               NorH,
               ElevatedButton(
                 onPressed: () {
-                  gsheets.insertData(prProvider.inputText, bleProvider.outputText).then((value) {
+                  gsheets.insertData(bleProvider.selectedWave, bleProvider.selectedResult, bleProvider.result).then((value) {
                     makeFToast(context, size, '저장되었습니다.');
                   });
                 },

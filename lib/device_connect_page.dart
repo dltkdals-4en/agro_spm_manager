@@ -38,7 +38,7 @@ class DeviceConnectPage extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () {
-              gsheets.insertData(prProvider.inputText, bleProvider.outputText).then((value) {
+              gsheets.insertData(bleProvider.selectedWave, bleProvider.selectedResult, bleProvider.result).then((value) {
                 makeFToast(context, size, '저장되었습니다.');
               });
             },

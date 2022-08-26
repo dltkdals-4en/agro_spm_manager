@@ -1,4 +1,5 @@
 import 'package:agro_spm_manager/providers/ble_provider.dart';
+import 'package:agro_spm_manager/providers/blue_provider.dart';
 import 'package:agro_spm_manager/providers/chart_data_provider.dart';
 import 'package:agro_spm_manager/providers/gsheets_provider.dart';
 import 'package:agro_spm_manager/providers/protocol_provider.dart';
@@ -23,6 +24,9 @@ Future<void> main() async {
       providers: [
         ChangeNotifierProvider<BleProvider>(
           create: (_) => BleProvider(),
+        ),
+        ChangeNotifierProvider<BlueProvider>(
+          create: (_) => BlueProvider(),
         ),
         ChangeNotifierProvider<ProtocolProvider>(
           create: (_) => ProtocolProvider(),

@@ -225,6 +225,7 @@ class BleProvider with ChangeNotifier {
       case '\$102':
         result = '';
         result = dataString.substring(5, dataString.length - 3);
+        getResult();
         notifyListeners();
         break;
       case '\$103':
@@ -241,17 +242,17 @@ class BleProvider with ChangeNotifier {
   }
 
   String selectedWave = '';
-
-  String getResult() {
+  String selectedResult = '';
+  void getResult() {
     if (result != '') {
       if (selectedWave != '') {
-        var index = int.parse(selectedWave) / 5 - 67;
-        return result.split(',')[index.toInt()];
+        var index = int.parse(selectedWave) / 5 - 68;
+        selectedResult = result.split(',')[index.toInt()];
       } else {
-        return result.split(',')[0];
+        selectedResult = result.split(',')[0];
       }
     } else {
-      return '';
+      selectedResult = '';
     }
   }
 
