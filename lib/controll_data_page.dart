@@ -1,6 +1,8 @@
 import 'package:agro_spm_manager/contstants/constants.dart';
 import 'package:agro_spm_manager/contstants/debug_mode.dart';
 import 'package:agro_spm_manager/contstants/screen_size.dart';
+import 'package:agro_spm_manager/get_pairing_devices.dart';
+import 'package:agro_spm_manager/pairing_list_page.dart';
 import 'package:agro_spm_manager/providers/ble_provider.dart';
 import 'package:agro_spm_manager/providers/gsheets_provider.dart';
 import 'package:agro_spm_manager/providers/protocol_provider.dart';
@@ -25,14 +27,17 @@ class ControllDataPage extends StatelessWidget {
       appBar: AppBar(
         leading: BackButton(
           onPressed: () {
-            bleProvider.connection?.dispose();
-            bleProvider.connection = null;
-            bleProvider.bleConnected = false;
-            bleProvider.wavelength = false;
-            bleProvider.selectedResult = '';
-            Navigator.maybePop(context);
+            bleProvider.initConnection();
+
+            Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => GetPairingDevices(),
+                ));
           },
         ),
+        title: Text('${device.name}'),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -99,7 +104,6 @@ class ControllDataPage extends StatelessWidget {
                               }).toList(),
                               onChanged: (value) {
                                 bleProvider.changeWave(value);
-
                               },
                             ),
                           ],
@@ -133,7 +137,10 @@ class ControllDataPage extends StatelessWidget {
               NorH,
               ElevatedButton(
                 onPressed: () {
-                  gsheets.insertData(bleProvider.selectedWave, bleProvider.selectedResult, bleProvider.result).then((value) {
+                  gsheets
+                      .insertData(bleProvider.selectedWave,
+                          bleProvider.selectedResult, bleProvider.result)
+                      .then((value) {
                     makeFToast(context, size, '저장되었습니다.');
                   });
                 },

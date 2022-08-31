@@ -1,15 +1,14 @@
+import 'package:agro_spm_manager/contstants/debug_mode.dart';
+import 'package:agro_spm_manager/find_saved_device.dart';
 import 'package:agro_spm_manager/providers/ble_provider.dart';
-import 'package:agro_spm_manager/providers/blue_provider.dart';
 import 'package:agro_spm_manager/providers/chart_data_provider.dart';
 import 'package:agro_spm_manager/providers/gsheets_provider.dart';
 import 'package:agro_spm_manager/providers/protocol_provider.dart';
 import 'package:agro_spm_manager/providers/setting_provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_size/flutter_keyboard_size.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
 import 'contstants/constants.dart';
 import 'contstants/screen_size.dart';
 import 'get_pairing_devices.dart';
@@ -24,9 +23,6 @@ Future<void> main() async {
       providers: [
         ChangeNotifierProvider<BleProvider>(
           create: (_) => BleProvider(),
-        ),
-        ChangeNotifierProvider<BlueProvider>(
-          create: (_) => BlueProvider(),
         ),
         ChangeNotifierProvider<ProtocolProvider>(
           create: (_) => ProtocolProvider(),
@@ -60,7 +56,7 @@ class MyApp extends StatelessWidget {
         builder: (context, child) {
           return MaterialApp(
             color: Colors.lightBlue,
-            home: GetPairingDevices(),
+            home: (isDebug)?FindSavedDevice():GetPairingDevices(),
             theme: ThemeData(
               fontFamily: 'NotoSansKR',
               textTheme: TextTheme(

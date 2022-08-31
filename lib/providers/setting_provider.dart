@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingProvider with ChangeNotifier {
   String existingDevice = '';
-
+  bool isSaved = false;
   bool debugVisibility = false;
 
   Future<void> setDevice(
@@ -16,5 +16,13 @@ class SettingProvider with ChangeNotifier {
       existingDevice = (await prefs.getString('device'))!;
     }
     notifyListeners();
+  }
+  Future<void> checkIsSaved()async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    if(prefs.getString('device')!=''){
+      isSaved = true;
+      print(prefs.getString('device'));
+      notifyListeners();
+    }
   }
 }

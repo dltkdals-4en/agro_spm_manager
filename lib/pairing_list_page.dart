@@ -3,10 +3,8 @@ import 'package:agro_spm_manager/providers/ble_provider.dart';
 import 'package:agro_spm_manager/providers/setting_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import 'contstants/constants.dart';
 import 'contstants/screen_size.dart';
-import 'device_connect_page.dart';
 import 'get_ble_devices.dart';
 
 class PairingListPage extends StatelessWidget {
@@ -51,6 +49,7 @@ class PairingListPage extends StatelessWidget {
                   itemBuilder: (context, index) {
                     return ListTile(
                       title: Text('${pairingDevices[index].name}'),
+                      subtitle: Text('${pairingDevices[index].address}'),
                       trailing: ElevatedButton(
                         onPressed: () {
                           settingProvider

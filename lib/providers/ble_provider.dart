@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:agro_spm_manager/get_pairing_devices.dart';
+import 'package:agro_spm_manager/pairing_list_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -24,6 +26,7 @@ class BleProvider with ChangeNotifier {
   List<int> test = [];
   List resultList = [];
   String result = '';
+  int count = 0;
 
   void scanBle() {
     serial.startDiscovery().listen((event) {
@@ -46,13 +49,60 @@ class BleProvider with ChangeNotifier {
     });
   }
 
+  Future<void> autoConnect(BuildContext context, Size size) async {
+    if (!bleConnected) {
+      BluetoothDevice testDevice = pairingDevices[count];
+      await BluetoothConnection.toAddress(testDevice.address).then((value) {
+        selectDevice = testDevice;
+        connection = value;
+        bleConnected = value.isConnected;
+        saveDeviceInfo(selectDevice);
+
+        count = 0;
+        notifyListeners();
+
+        connection!.input!.listen((event) {
+          test += event;
+          if (test.contains(41)) {
+            _onDataReceived(Uint8List.fromList(test));
+            print('test');
+            test.clear();
+          }
+          // _onDataReceived(event);
+          // notifyListeners();
+        });
+      }).catchError((e) {
+        if (count < pairingDevices.length - 1) {
+          count++;
+          autoConnect(context, size);
+        } else if (count == pairingDevices.length - 1) {
+          count = 0;
+          makeFToast(context, size, '연결 가능한 기기가 없습니다.\n페어링된 기기 페이지로 이동됩니다.');
+          Future.delayed(Duration(seconds: 2)).then((value) {
+            `Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => GetPairingDevices()),
+                (route) => false);
+          });
+        }
+      });
+    } else {
+      bleConnected = false;
+      if (connection != null) {
+        connection!.dispose();
+
+        connection = null;
+      }
+      print('con ');
+    }
+  }
+
   Future<void> connecteBle(BuildContext context, Size size) async {
-    print('connectBle() : ${selectDevice!.isConnected}');
     if (!bleConnected) {
       await BluetoothConnection.toAddress(selectDevice!.address).then((value) {
         connection = value;
         bleConnected = value.isConnected;
-
+        saveDeviceInfo(selectDevice);
         notifyListeners();
 
         connection!.input!.listen((event) {
@@ -67,7 +117,6 @@ class BleProvider with ChangeNotifier {
         });
       }).catchError((e) {
         makeFToast(context, size, "기기 연결을 확인해주세요");
-        Navigator.pop(context);
       });
     } else {
       bleConnected = false;
@@ -77,7 +126,6 @@ class BleProvider with ChangeNotifier {
         connection = null;
       }
       print('con');
-      notifyListeners();
     }
   }
 
@@ -186,6 +234,7 @@ class BleProvider with ChangeNotifier {
       pairingDevices = bondedDevices
           .where((element) => element.name!.contains('AgroSPM'))
           .toList();
+      pairingDevices.sort((a, b) => a.name!.compareTo(b.name!));
     }).then((value) {
       findPairingDevices = true;
       notifyListeners();
@@ -243,6 +292,7 @@ class BleProvider with ChangeNotifier {
 
   String selectedWave = '';
   String selectedResult = '';
+
   void getResult() {
     if (result != '') {
       if (selectedWave != '') {
@@ -260,5 +310,30 @@ class BleProvider with ChangeNotifier {
     selectedWave = value.toString();
     getResult();
     notifyListeners();
+  }
+
+  var isSaved = true;
+
+  Future<void> compareSaved() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await getPairingList().then((value) {
+      for (var element in pairingDevices) {
+        if (element.name == prefs.getString('device')) {
+          isSaved = true;
+          notifyListeners();
+        }
+        ;
+      }
+    });
+  }
+
+  void saveDeviceInfo(BluetoothDevice? selectDevice) {}
+
+  void initConnection() {
+    connection?.dispose();
+    connection = null;
+    bleConnected = false;
+    wavelength = false;
+    selectedResult = '';
   }
 }

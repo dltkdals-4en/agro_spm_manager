@@ -1,4 +1,5 @@
 
+import 'package:agro_spm_manager/no_bluetooth_device_widget.dart';
 import 'package:agro_spm_manager/providers/ble_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -28,7 +29,7 @@ class BleScanningPage extends StatelessWidget {
       ),
       body: Container(
         child: (bleProvider.bleDevices.length == 0)
-            ? LoadingWidget()
+            ? NoBluetoothDeviceWidget()
             : ListView.separated(
                 itemCount: bleProvider.bleDevices.length,
                 itemBuilder: (context, index) {
