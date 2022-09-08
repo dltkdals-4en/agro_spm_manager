@@ -38,7 +38,10 @@ class DeviceConnectPage extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () {
-              gsheets.insertData(bleProvider.selectedWave, bleProvider.selectedResult, bleProvider.result).then((value) {
+              gsheets
+                  .insertData(bleProvider.selectedWave,
+                      bleProvider.selectedResult, bleProvider.result)
+                  .then((value) {
                 makeFToast(context, size, '저장되었습니다.');
               });
             },
@@ -52,7 +55,6 @@ class DeviceConnectPage extends StatelessWidget {
               //       builder: (context) => StartSensorConnect(),
               //     ));
               print('aaa ${bleProvider.getOutputData().split(',').length}');
-
             },
             icon: Icon(Icons.navigate_next),
           ),
@@ -73,7 +75,7 @@ class DeviceConnectPage extends StatelessWidget {
                   ),
                   ElevatedButton(
                     onPressed: () async {
-                      await bleProvider.connecteBle(
+                      await bleProvider.connectBle(
                           context, Size(size.width, 70));
                     },
                     child: Text('기기 연결하기'),
@@ -108,7 +110,6 @@ class DeviceConnectPage extends StatelessWidget {
                   children: [
                     ElevatedButton(
                       onPressed: () {
-
                         bleProvider.sendData('\$preOperation()\r\n');
                         prProvider.inputProtocol('\$preOperation()\r\n');
                       },
@@ -125,7 +126,8 @@ class DeviceConnectPage extends StatelessWidget {
                       onPressed: () {
                         bleProvider.sendData('\$connectSensor()\r\n');
                         prProvider.inputProtocol('\$connectSensor()\r\n');
-                        print('aaa ${bleProvider.getOutputData().split(',').length}');
+                        print(
+                            'aaa ${bleProvider.getOutputData().split(',').length}');
                       },
                       child: Text('connectSensor'),
                     ),
@@ -133,7 +135,6 @@ class DeviceConnectPage extends StatelessWidget {
                       onPressed: () {
                         bleProvider.sendData('\$getSpectrumData()\r\n');
                         prProvider.inputProtocol('\$getSpectrumSensor()\r\n');
-
                       },
                       child: Text('getSpectrum'),
                     ),

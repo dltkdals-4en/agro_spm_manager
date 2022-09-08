@@ -5,6 +5,7 @@ class SettingProvider with ChangeNotifier {
   String existingDevice = '';
   bool isSaved = false;
   bool debugVisibility = false;
+  int checkSaved = 0;
 
   Future<void> setDevice(
       {required String deviceName, required String address}) async {
@@ -17,11 +18,14 @@ class SettingProvider with ChangeNotifier {
     }
     notifyListeners();
   }
-  Future<void> checkIsSaved()async {
+
+  Future<void> checkIsSaved() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    if(prefs.getString('device')!=''){
-      isSaved = true;
-      print(prefs.getString('device'));
+    if (prefs.getString('device') == null) {
+      checkSaved = 1;
+      notifyListeners();
+    } else {
+      checkSaved = 2;
       notifyListeners();
     }
   }

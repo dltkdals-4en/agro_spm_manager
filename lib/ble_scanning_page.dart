@@ -1,4 +1,5 @@
 
+import 'package:agro_spm_manager/get_pairing_devices.dart';
 import 'package:agro_spm_manager/no_bluetooth_device_widget.dart';
 import 'package:agro_spm_manager/providers/ble_provider.dart';
 import 'package:flutter/material.dart';
@@ -27,44 +28,42 @@ class BleScanningPage extends StatelessWidget {
           ),
         ],
       ),
-      body: Container(
-        child: (bleProvider.bleDevices.length == 0)
-            ? NoBluetoothDeviceWidget()
-            : ListView.separated(
-                itemCount: bleProvider.bleDevices.length,
-                itemBuilder: (context, index) {
-                  var device = bleProvider.bleDevices[index].device;
-                  return ListTile(
-                    title: Text('${device.name ?? "알 수 없는 기기"}'),
-                    subtitle: Text((device.isBonded) ? '페어링 O' : '페어링 X'),
-                    onTap: () async {
-                      bleProvider.setSelectedDivice(device);
-                      bleProvider.selectedIndex = index;
-                      if (!device.isBonded) {
-                        await bleProvider
-                            .devicePairing(device.address)
-                            .then((value) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => DeviceConnectPage(),
-                            ),
-                          );
-                        });
-                      } else {
+      body: (bleProvider.bleDevices.length == 0)
+          ? NoBluetoothDeviceWidget()
+          : ListView.separated(
+              itemCount: bleProvider.bleDevices.length,
+              itemBuilder: (context, index) {
+                var device = bleProvider.bleDevices[index].device;
+                return ListTile(
+                  title: Text('${device.name ?? "알 수 없는 기기"}'),
+                  subtitle: Text((device.isBonded) ? '페어링 O' : '페어링 X'),
+                  onTap: () async {
+                    bleProvider.setSelectedDivice(device);
+                    bleProvider.selectedIndex = index;
+                    if (!device.isBonded) {
+                      await bleProvider
+                          .devicePairing(device.address)
+                          .then((value) {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => DeviceConnectPage(),
+                            builder: (context) => GetPairingDevices(),
                           ),
                         );
-                      }
-                    },
-                  );
-                },
-                separatorBuilder: (context, index) => Divider(),
-              ),
-      ),
+                      });
+                    } else {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DeviceConnectPage(),
+                        ),
+                      );
+                    }
+                  },
+                );
+              },
+              separatorBuilder: (context, index) => Divider(),
+            ),
     );
   }
 }

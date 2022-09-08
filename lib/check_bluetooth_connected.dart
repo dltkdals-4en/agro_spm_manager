@@ -19,8 +19,9 @@ class CheckBluetoothConnected extends StatelessWidget {
         return ControllDataPage();
       }
     } else {
-      bleProvider.autoConnect(context, size);
-      return LoadingPage('연결 가능한 기기를 찾는 중이에요.');
+      print(bleProvider.selectDevice?.name);
+      bleProvider.connectBle(context, size);
+      return LoadingPage('기기 연결 중이에요.');
     }
   }
 }

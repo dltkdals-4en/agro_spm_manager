@@ -12,16 +12,16 @@ class AutoConnectingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
     var bleProvider = Provider.of<BleProvider>(context);
-    if(!bleProvider.isSaved){
-      bleProvider.compareSaved();
+    if (!bleProvider.findPairingDevices) {
+      bleProvider.getPairingList();
       return LoadingPage('');
-    }else{
-      if(!bleProvider.findPairingDevices){
-        bleProvider.getPairingList();
+    } else {
+      if (!bleProvider.isSaved) {
+        bleProvider.compareSaved();
         return LoadingPage('');
+      } else {
+        return CheckBluetoothConnected();
       }
-      return CheckBluetoothConnected();
     }
-
   }
 }

@@ -79,7 +79,7 @@ class BleProvider with ChangeNotifier {
           count = 0;
           makeFToast(context, size, '연결 가능한 기기가 없습니다.\n페어링된 기기 페이지로 이동됩니다.');
           Future.delayed(Duration(seconds: 2)).then((value) {
-            `Navigator.pushAndRemoveUntil(
+            Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (context) => GetPairingDevices()),
                 (route) => false);
@@ -97,7 +97,7 @@ class BleProvider with ChangeNotifier {
     }
   }
 
-  Future<void> connecteBle(BuildContext context, Size size) async {
+  Future<void> connectBle(BuildContext context, Size size) async {
     if (!bleConnected) {
       await BluetoothConnection.toAddress(selectDevice!.address).then((value) {
         connection = value;
@@ -236,6 +236,7 @@ class BleProvider with ChangeNotifier {
           .toList();
       pairingDevices.sort((a, b) => a.name!.compareTo(b.name!));
     }).then((value) {
+      print(pairingDevices);
       findPairingDevices = true;
       notifyListeners();
     });
@@ -249,12 +250,15 @@ class BleProvider with ChangeNotifier {
 
   void initBleDevices() {
     bleDevices.clear();
-    notifyListeners();
+
     scanBle();
+    notifyListeners();
   }
 
   Future<void> devicePairing(String address) async {
-    await serial.bondDeviceAtAddress(address);
+    await serial.bondDeviceAtAddress(address).catchError((e) {
+      print(e);
+    });
     notifyListeners();
   }
 
@@ -312,19 +316,21 @@ class BleProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  var isSaved = true;
-
+  bool isSaved = false;
+  int checkSave = 0;
   Future<void> compareSaved() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await getPairingList().then((value) {
-      for (var element in pairingDevices) {
+    print(prefs.getString('device'));
+    for (var element in pairingDevices) {
         if (element.name == prefs.getString('device')) {
+          print(element.name);
+          checkSave = 1;
+          selectDevice = element;
           isSaved = true;
           notifyListeners();
         }
-        ;
       }
-    });
+
   }
 
   void saveDeviceInfo(BluetoothDevice? selectDevice) {}
