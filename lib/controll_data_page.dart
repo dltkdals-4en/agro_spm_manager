@@ -1,8 +1,7 @@
 import 'package:agro_spm_manager/contstants/constants.dart';
 import 'package:agro_spm_manager/contstants/debug_mode.dart';
 import 'package:agro_spm_manager/contstants/screen_size.dart';
-import 'package:agro_spm_manager/get_pairing_devices.dart';
-import 'package:agro_spm_manager/pairing_list_page.dart';
+
 import 'package:agro_spm_manager/providers/ble_provider.dart';
 import 'package:agro_spm_manager/providers/gsheets_provider.dart';
 import 'package:agro_spm_manager/providers/protocol_provider.dart';
@@ -10,6 +9,8 @@ import 'package:agro_spm_manager/providers/setting_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:provider/provider.dart';
+
+import 'ble_connect/get_pairing_devices.dart';
 
 class ControllDataPage extends StatelessWidget {
   const ControllDataPage({Key? key}) : super(key: key);
@@ -38,6 +39,13 @@ class ControllDataPage extends StatelessWidget {
         ),
         title: Text('${device.name}'),
         centerTitle: true,
+        actions: [
+          IconButton(
+              onPressed: () {
+                settingProvider.changeDebug();
+              },
+              icon: Icon(Icons.track_changes))
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -53,24 +61,32 @@ class ControllDataPage extends StatelessWidget {
                     onPressed: () {
                       bleProvider.sendData('\$preOperation()\r\n');
                       prProvider.inputProtocol('\$preOperation()\r\n');
+                      settingProvider.changeLamp();
                     },
                     style: ElevatedButton.styleFrom(
-                        fixedSize: Size(size.width / 2 - 30, 60)),
+                        fixedSize: Size(size.width / 2 - 30, 60),
+                        primary: (!settingProvider.lamp)
+                            ? AppColors.lightPrimary
+                            : AppColors.grey),
                     child: Text('램프 ON'),
                   ),
                   ElevatedButton(
                     onPressed: () {
                       bleProvider.sendData('\$endOperation()\r\n');
                       prProvider.inputProtocol('\$endOperation()\r\n');
+                      settingProvider.changeLamp();
                     },
                     style: ElevatedButton.styleFrom(
-                        fixedSize: Size(size.width / 2 - 30, 60)),
+                        fixedSize: Size(size.width / 2 - 30, 60),
+                        primary: (settingProvider.lamp)
+                            ? AppColors.lightPrimary
+                            : AppColors.grey),
                     child: Text('램프 OFF'),
                   ),
                 ],
               ),
               NorH,
-              (controllDataPageDebug)
+              (settingProvider.debugVisibility)
                   ? Column(
                       children: [
                         Text(
@@ -80,8 +96,57 @@ class ControllDataPage extends StatelessWidget {
                         SmH,
                         Container(
                           width: size.width,
-                          height: size.height / 3,
-                          color: Colors.amber,
+                          decoration: BoxDecoration(
+                              border: Border.all(
+                                  color: AppColors.primary, width: 1)),
+                          child: Padding(
+                            padding: EdgeInsets.all(NORMALGAP),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '410: ${bleProvider.testNum1}',
+                                  style: makeTextStyle(
+                                      16, AppColors.black, 'regular'),
+                                ),
+                                SmH,
+                                Text('610: ${bleProvider.testNum2}',
+                                    style: makeTextStyle(
+                                        16, AppColors.black, 'regular')),
+                                SmH,
+                                Text('720: ${bleProvider.testNum3}',
+                                    style: makeTextStyle(
+                                        16, AppColors.black, 'regular')),
+                              ],
+                            ),
+                          ),
+                        ),
+                        NorH,
+                        ElevatedButton(
+                          onPressed: () {
+                            bleProvider.sendData('\$getSpectrumData()\r\n');
+                            prProvider
+                                .inputProtocol('\$getSpectrumSensor()\r\n');
+                          },
+                          style: ElevatedButton.styleFrom(
+                              fixedSize: Size(size.width, 60)),
+                          child: Text('센서 측정하기'),
+                        ),
+                        NorH,
+                        ElevatedButton(
+                          onPressed: () {
+                            gsheets
+                                .insertData(
+                                    bleProvider.selectedWave,
+                                    bleProvider.selectedResult,
+                                    bleProvider.result)
+                                .then((value) {
+                              makeFToast(context, size, '저장되었습니다.');
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                              fixedSize: Size(size.width, 60)),
+                          child: Text('데이터 저장'),
                         ),
                       ],
                     )
@@ -122,32 +187,35 @@ class ControllDataPage extends StatelessWidget {
                             )
                           ],
                         ),
+                        NorH,
+                        ElevatedButton(
+                          onPressed: () {
+                            bleProvider.sendData('\$getSpectrumData()\r\n');
+                            prProvider
+                                .inputProtocol('\$getSpectrumSensor()\r\n');
+                          },
+                          style: ElevatedButton.styleFrom(
+                              fixedSize: Size(size.width, 60)),
+                          child: Text('센서 측정하기'),
+                        ),
+                        NorH,
+                        ElevatedButton(
+                          onPressed: () {
+                            gsheets
+                                .insertData(
+                                    bleProvider.selectedWave,
+                                    bleProvider.selectedResult,
+                                    bleProvider.result)
+                                .then((value) {
+                              makeFToast(context, size, '저장되었습니다.');
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                              fixedSize: Size(size.width, 60)),
+                          child: Text('결과값 스프레드시트 저장'),
+                        ),
                       ],
                     ),
-              NorH,
-              ElevatedButton(
-                onPressed: () {
-                  bleProvider.sendData('\$getSpectrumData()\r\n');
-                  prProvider.inputProtocol('\$getSpectrumSensor()\r\n');
-                },
-                style:
-                    ElevatedButton.styleFrom(fixedSize: Size(size.width, 60)),
-                child: Text('센서 측정하기'),
-              ),
-              NorH,
-              ElevatedButton(
-                onPressed: () {
-                  gsheets
-                      .insertData(bleProvider.selectedWave,
-                          bleProvider.selectedResult, bleProvider.result)
-                      .then((value) {
-                    makeFToast(context, size, '저장되었습니다.');
-                  });
-                },
-                style:
-                    ElevatedButton.styleFrom(fixedSize: Size(size.width, 60)),
-                child: Text('결과값 스프레드시트 저장'),
-              ),
             ],
           ),
         ),

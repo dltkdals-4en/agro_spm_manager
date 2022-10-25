@@ -4,8 +4,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 class SettingProvider with ChangeNotifier {
   String existingDevice = '';
   bool isSaved = false;
-  bool debugVisibility = false;
+  bool debugVisibility = true;
   int checkSaved = 0;
+  bool lamp = false;
 
   Future<void> setDevice(
       {required String deviceName, required String address}) async {
@@ -28,5 +29,15 @@ class SettingProvider with ChangeNotifier {
       checkSaved = 2;
       notifyListeners();
     }
+  }
+
+  void changeDebug() {
+    (debugVisibility) ? debugVisibility = false : debugVisibility = true;
+    notifyListeners();
+  }
+
+  void changeLamp() {
+    (lamp) ? lamp = false : lamp = true;
+    notifyListeners();
   }
 }

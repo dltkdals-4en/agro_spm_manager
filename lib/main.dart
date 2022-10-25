@@ -9,9 +9,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_size/flutter_keyboard_size.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'ble_connect/get_pairing_devices.dart';
 import 'contstants/constants.dart';
 import 'contstants/screen_size.dart';
-import 'get_pairing_devices.dart';
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

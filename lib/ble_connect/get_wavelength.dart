@@ -3,7 +3,7 @@ import 'package:agro_spm_manager/providers/chart_data_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'contstants/loading_page.dart';
+import '../contstants/loading_page.dart';
 
 class GetWavelength extends StatelessWidget {
   const GetWavelength({Key? key}) : super(key: key);

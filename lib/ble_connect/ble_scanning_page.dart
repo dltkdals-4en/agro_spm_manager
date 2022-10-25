@@ -1,12 +1,11 @@
 
-import 'package:agro_spm_manager/get_pairing_devices.dart';
+
 import 'package:agro_spm_manager/no_bluetooth_device_widget.dart';
 import 'package:agro_spm_manager/providers/ble_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import 'contstants/loading_widget.dart';
-import 'device_connect_page.dart';
+import '../device_connect_page.dart';
+import 'get_pairing_devices.dart';
 
 class BleScanningPage extends StatelessWidget {
   const BleScanningPage({Key? key}) : super(key: key);

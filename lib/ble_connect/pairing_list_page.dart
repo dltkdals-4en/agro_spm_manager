@@ -3,8 +3,8 @@ import 'package:agro_spm_manager/providers/ble_provider.dart';
 import 'package:agro_spm_manager/providers/setting_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'contstants/constants.dart';
-import 'contstants/screen_size.dart';
+import '../contstants/constants.dart';
+import '../contstants/screen_size.dart';
 import 'get_ble_devices.dart';
 
 class PairingListPage extends StatelessWidget {
@@ -32,6 +32,17 @@ class PairingListPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Container(
+              width: size.width,
+              child: Padding(
+                padding: EdgeInsets.all(NORMALGAP),
+                child: Text(
+                  '기기를 켠 후, 기기의 블루투스 버튼을 2초 정도 눌러주세요.\n기기의 파란 불이 깜빡이면 앱의 "기기 연결" 버튼을 눌러주세요.',
+                  style: makeTextStyle(18, AppColors.black, 'bold'),
+                ),
+              ),
+              color: AppColors.white,
+            ),
             Container(
               width: size.width,
               child: Padding(

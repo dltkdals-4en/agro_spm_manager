@@ -1,13 +1,12 @@
 import 'dart:convert';
 import 'dart:typed_data';
-import 'package:agro_spm_manager/get_pairing_devices.dart';
-import 'package:agro_spm_manager/pairing_list_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../ble_connect/get_pairing_devices.dart';
 import '../contstants/constants.dart';
-
+enum DataType {WAVE,SPECTRUM}
 class BleProvider with ChangeNotifier {
   FlutterBluetoothSerial serial = FlutterBluetoothSerial.instance;
   List<BluetoothDevice> pairingDevices = [];
@@ -27,6 +26,7 @@ class BleProvider with ChangeNotifier {
   List resultList = [];
   String result = '';
   int count = 0;
+
 
   void scanBle() {
     serial.startDiscovery().listen((event) {
@@ -65,7 +65,7 @@ class BleProvider with ChangeNotifier {
           test += event;
           if (test.contains(41)) {
             _onDataReceived(Uint8List.fromList(test));
-            print('test');
+
             test.clear();
           }
           // _onDataReceived(event);
@@ -108,15 +108,27 @@ class BleProvider with ChangeNotifier {
         connection!.input!.listen((event) {
           test += event;
           if (test.contains(41)) {
-            _onDataReceived(Uint8List.fromList(test));
+            print(test[4]);
             print('test');
-            test.clear();
+            if(test[3]==50){
+              print('test 50');
+              _onDataReceived(Uint8List.fromList(test));
+              test.clear();
+            }else{
+              _onDataReceived(Uint8List.fromList(test));
+              test.clear();
+            }
+
           }
           // _onDataReceived(event);
           // notifyListeners();
         });
       }).catchError((e) {
         makeFToast(context, size, "기기 연결을 확인해주세요");
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => GetPairingDevices()),
+                (route) => false);
       });
     } else {
       bleConnected = false;
@@ -130,37 +142,6 @@ class BleProvider with ChangeNotifier {
   }
 
   String existingDevice = '';
-
-  Future<void> setDevice(context, size,
-      {required String deviceName, required String address}) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    if (prefs.getString('device') != deviceName) {
-      await prefs.setString('device', deviceName);
-      await prefs.setString('address', address);
-      existingDevice = (await prefs.getString('device'))!;
-      notifyListeners();
-    } else {}
-  }
-
-  Future<void> sendData(String str) async {
-    outputList.clear();
-    String sendStr = '$str\r\n';
-
-    var i = Uint8List.fromList(utf8.encode(sendStr));
-
-    if (str.length > 0) {
-      try {
-        connection!.output.add(i);
-        await connection!.output.allSent;
-        notifyListeners();
-      } catch (e) {
-        print(e);
-        // Ignore error, but notify state
-
-      }
-    }
-  }
 
   String _onDataReceived(Uint8List data) {
     // Allocate buffer for parsed data
@@ -198,6 +179,83 @@ class BleProvider with ChangeNotifier {
     notifyListeners();
     return dataString;
     int index = buffer.indexOf(13);
+  }
+
+  Future<void> setDevice(context, size,
+      {required String deviceName, required String address}) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (prefs.getString('device') != deviceName) {
+      await prefs.setString('device', deviceName);
+      await prefs.setString('address', address);
+      existingDevice = (await prefs.getString('device'))!;
+      notifyListeners();
+    } else {}
+  }
+  Future<void> sendData(String str) async {
+    outputList.clear();
+    String sendStr = '$str\r\n';
+
+    var i = Uint8List.fromList(utf8.encode(sendStr));
+
+    if (str.length > 0) {
+      try {
+        connection!.output.add(i);
+        await connection!.output.allSent;
+        notifyListeners();
+      } catch (e) {
+        print(e);
+        // Ignore error, but notify state
+
+      }
+    }
+  }
+
+  Future<void> getSpectrumData() async{
+    String str = '\$getSpectrumData()\r\n\r\n';
+    var i =Uint8List.fromList(utf8.encode(str));
+    try {
+        connection!.output.add(i);
+        await connection!.output.allSent;
+        notifyListeners();
+      } catch (e) {
+        print(e);
+        // Ignore error, but notify state
+
+      }
+
+  }
+  String testNum1 ='';
+  String testNum2 ='';
+  String testNum3 ='';
+
+  void settingString(String dataString) {
+    var startString = dataString.substring(0, 4);
+    print(startString);
+    switch (startString) {
+      case '\$102':
+        result = '';
+        result = dataString.substring(5, dataString.length - 3);
+        var list = result.split(',');
+        testNum1 =list[14];
+        testNum2 = list[54];
+        testNum3 =list[76];
+
+        getResult();
+        notifyListeners();
+        break;
+      case '\$103':
+        var list = dataString.split(',');
+        list.removeAt(0);
+        waveList =
+            list.toString().substring(1, list.toString().length - 4).split(',');
+
+        selectedWave = waveList[0];
+        notifyListeners();
+        break;
+      default:
+        break;
+    }
   }
 
   int outputDataLength = 0;
@@ -269,29 +327,6 @@ class BleProvider with ChangeNotifier {
 
   Future<void> getWavelength() async {
     await sendData('\$connectSensor()\r\n').then((value) => wavelength = true);
-  }
-
-  void settingString(String dataString) {
-    var startString = dataString.substring(0, 4);
-    print(startString);
-    switch (startString) {
-      case '\$102':
-        result = '';
-        result = dataString.substring(5, dataString.length - 3);
-        getResult();
-        notifyListeners();
-        break;
-      case '\$103':
-        var list = dataString.split(',');
-        list.removeAt(0);
-        waveList =
-            list.toString().substring(1, list.toString().length - 4).split(',');
-        selectedWave = waveList[0];
-        notifyListeners();
-        break;
-      default:
-        break;
-    }
   }
 
   String selectedWave = '';

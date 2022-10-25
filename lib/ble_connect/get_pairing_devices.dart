@@ -1,8 +1,8 @@
-import 'package:agro_spm_manager/pairing_list_page.dart';
+import 'package:agro_spm_manager/ble_connect/pairing_list_page.dart';
 import 'package:agro_spm_manager/providers/ble_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'contstants/loading_page.dart';
+import '../contstants/loading_page.dart';
 import 'get_ble_devices.dart';
 
 class GetPairingDevices extends StatelessWidget {
